@@ -11,6 +11,7 @@ import { LoginButton } from './LoginButton';
 import { LogoutButton } from './LogoutButton';
 import useAuthStore from '@/store/auth/authstore';
 import useCartStore from '@/store/cart/cartSlice';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export const NavigationBar = () => {
   const navigate = useNavigate();

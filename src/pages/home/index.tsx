@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-
 import { ApiErrorBoundary } from '@/pages/common/components/ApiErrorBoundary';
 import { Layout } from '@/pages/common/components/Layout';
 import { ProductFilter } from './components/ProductFilter';

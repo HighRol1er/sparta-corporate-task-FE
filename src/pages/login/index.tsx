@@ -22,6 +22,7 @@ interface FormErrors {
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { setIsLogin, setUser } = useAuthStore();
+
   const { toast } = useToast();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -88,6 +89,7 @@ export const LoginPage = () => {
       }
     }
   };
+
   return (
     <Layout authStatus={authStatusType.NEED_NOT_LOGIN}>
       <div className="w-full h-screen max-w-md mx-auto space-y-8 flex flex-col justify-center">
