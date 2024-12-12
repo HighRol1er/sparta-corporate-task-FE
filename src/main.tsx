@@ -6,6 +6,7 @@ import { RouterProvider } from 'react-router-dom';
 import './index.css';
 import Toast from './components/ui/toast';
 
+import Cookies from 'js-cookie';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase'; // Firebase 설정을 import
 import useAuthStore from './store/auth/authstore';
@@ -16,17 +17,25 @@ const isDevEnvironment = import.meta.env.DEV;
 const rootElement = document.getElementById('root');
 
 const Main = () => {
-  const { setIsLogin } = useAuthStore();
+  const { setIsLogin, setUser } = useAuthStore();
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsLogin(true);
-      } else {
-        console.log('user not found');
-      }
-    });
-  }, [setIsLogin]);
+    const token = Cookies.get('accessToken');
+    if (token) {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setIsLogin(true);
+          setUser({
+            uid: user.uid,
+            email: user.email ?? '',
+            displayName: user.displayName ?? '',
+          });
+        } else {
+          console.log('user not found');
+        }
+      });
+    }
+  }, [setIsLogin, setUser]);
 
   return <></>;
 };
