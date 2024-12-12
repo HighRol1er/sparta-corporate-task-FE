@@ -4,6 +4,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import './index.css';
+import Toast from './components/ui/toast';
 
 const queryClient = new QueryClient();
 const isDevEnvironment = import.meta.env.DEV;
@@ -14,6 +15,7 @@ if (rootElement) {
     <QueryClientProvider client={queryClient}>
       {isDevEnvironment && <ReactQueryDevtools />}
       <RouterProvider router={router} />
+      <Toast />
     </QueryClientProvider>
   );
 } else {

@@ -6,7 +6,7 @@ import Cookies from 'js-cookie';
 import { Lock, Mail } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { useToast } from '@/hooks/useToast';
 import { pageRoutes } from '@/apiRoutes';
 import { EMAIL_PATTERN } from '@/constants';
 import { auth } from '@/firebase';
@@ -22,6 +22,7 @@ interface FormErrors {
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { setIsLogin, setUser } = useAuthStore();
+  const { toast } = useToast();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [errors, setErrors] = useState<FormErrors>({});
@@ -68,6 +69,12 @@ export const LoginPage = () => {
             displayName: user.displayName ?? '',
           });
         }
+        toast('로그인 성공!', {
+          type: 'success',
+          position: 'bottom-right',
+          showCloseButton: false,
+          autoClose: 2000,
+        });
 
         navigate(pageRoutes.main);
       } catch (error) {
@@ -81,7 +88,6 @@ export const LoginPage = () => {
       }
     }
   };
-
   return (
     <Layout authStatus={authStatusType.NEED_NOT_LOGIN}>
       <div className="w-full h-screen max-w-md mx-auto space-y-8 flex flex-col justify-center">

@@ -9,7 +9,7 @@ export interface ToastState {
   setAnimation: (id: string, type: ToastAnimationType) => void;
 }
 
-const usetoastStore = create<ToastState>((set) => ({
+const useToastStore = create<ToastState>()((set) => ({
   toastList: [],
   addToastList: (toast: ToastTypeOption) =>
     set((state) => ({ toastList: [...state.toastList, toast] })),
@@ -26,4 +26,4 @@ const usetoastStore = create<ToastState>((set) => ({
     })),
 }));
 
-export default usetoastStore;
+export default useToastStore;

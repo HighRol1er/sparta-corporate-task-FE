@@ -18,6 +18,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ALL_CATEGORY_ID, categories } from '@/constants';
 import { createNewProduct, initialProductState } from '@/helpers/product';
+import { useToast } from '@/hooks/useToast';
 import useProductStore from '@/store/product/productSlice';
 import { uploadImage } from '@/utils/imageUpload';
 import { ChangeEvent, useState } from 'react';
@@ -32,6 +33,7 @@ export const ProductRegistrationModal: React.FC<
   ProductRegistrationModalProps
 > = ({ isOpen, onClose, onProductAdded }) => {
   const { addProduct } = useProductStore();
+  const { toast } = useToast();
   const [product, setProduct] = useState<NewProductDTO>(initialProductState);
 
   const handleChange = (
@@ -62,6 +64,13 @@ export const ProductRegistrationModal: React.FC<
 
       const newProduct = createNewProduct(product, imageUrl);
       await addProduct(newProduct);
+
+      toast('물품 등록 완료!', {
+        type: 'success',
+        position: 'bottom-right',
+        showCloseButton: false,
+        autoClose: 2000,
+      });
       onClose();
       onProductAdded();
     } catch (error) {

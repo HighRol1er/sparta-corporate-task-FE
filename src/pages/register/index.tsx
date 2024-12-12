@@ -9,6 +9,7 @@ import { pageRoutes } from '@/apiRoutes';
 import { EMAIL_PATTERN } from '@/constants';
 import { Layout, authStatusType } from '@/pages/common/components/Layout';
 import useAuthStore from '@/store/auth/authstore';
+import { useToast } from '@/hooks/useToast';
 
 interface FormErrors {
   name?: string;
@@ -19,6 +20,7 @@ interface FormErrors {
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const { registerStatus, registerError, registerUser } = useAuthStore();
+  const { toast } = useToast();
 
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -49,6 +51,12 @@ export const RegisterPage: React.FC = () => {
     if (validateForm()) {
       try {
         await registerUser({ email, password, name });
+        toast('회원가입 성공!', {
+          type: 'success',
+          position: 'bottom-right',
+          showCloseButton: false,
+          autoClose: 2000,
+        });
         console.log('가입 성공!');
         navigate(pageRoutes.login);
       } catch (error) {
