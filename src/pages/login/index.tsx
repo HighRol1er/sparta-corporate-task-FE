@@ -11,8 +11,7 @@ import { pageRoutes } from '@/apiRoutes';
 import { EMAIL_PATTERN } from '@/constants';
 import { auth } from '@/firebase';
 import { Layout, authStatusType } from '@/pages/common/components/Layout';
-import { setIsLogin, setUser } from '@/store/auth/authSlice';
-import { useAppDispatch } from '@/store/hooks';
+import useAuthStore from '@/store/auth/authstore';
 
 interface FormErrors {
   email?: string;
@@ -22,8 +21,7 @@ interface FormErrors {
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-
+  const { setIsLogin, setUser } = useAuthStore();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [errors, setErrors] = useState<FormErrors>({});
@@ -62,15 +60,13 @@ export const LoginPage = () => {
 
         Cookies.set('accessToken', token, { expires: 7 });
 
-        dispatch(setIsLogin(true));
+        setIsLogin(true);
         if (user) {
-          dispatch(
-            setUser({
-              uid: user.uid,
-              email: user.email ?? '',
-              displayName: user.displayName ?? '',
-            })
-          );
+          setUser({
+            uid: user.uid,
+            email: user.email ?? '',
+            displayName: user.displayName ?? '',
+          });
         }
 
         navigate(pageRoutes.main);

@@ -8,9 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { pageRoutes } from '@/apiRoutes';
 import { EMAIL_PATTERN } from '@/constants';
 import { Layout, authStatusType } from '@/pages/common/components/Layout';
-import { RootState } from '@/store';
-import { registerUser } from '@/store/auth/authActions';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import useAuthStore from '@/store/auth/authstore';
 
 interface FormErrors {
   name?: string;
@@ -20,10 +18,7 @@ interface FormErrors {
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { registerStatus, registerError } = useAppSelector(
-    (state: RootState) => state.auth
-  );
+  const { registerStatus, registerError, registerUser } = useAuthStore();
 
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -53,7 +48,7 @@ export const RegisterPage: React.FC = () => {
     e.preventDefault();
     if (validateForm()) {
       try {
-        await dispatch(registerUser({ email, password, name })).unwrap();
+        await registerUser({ email, password, name });
         console.log('가입 성공!');
         navigate(pageRoutes.login);
       } catch (error) {

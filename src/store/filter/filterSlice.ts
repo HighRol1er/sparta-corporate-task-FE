@@ -1,13 +1,14 @@
 import { ALL_CATEGORY_ID } from '@/constants';
 import { ProductFilter } from '@/types/productType';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {
-  resetFilter,
-  setCategoryId,
-  setMaxPrice,
-  setMinPrice,
-  setTitle,
-} from './filterActions';
+import { create } from 'zustand';
+
+export interface FilterState extends ProductFilter {
+  setMinPrice: (minPrice: number) => void;
+  setMaxPrice: (maxPrice: number) => void;
+  setTitle: (title: string) => void;
+  setCategoryId: (categoryId: string) => void;
+  resetFilter: () => void;
+}
 
 const initialState: ProductFilter = {
   minPrice: 0,
@@ -16,26 +17,21 @@ const initialState: ProductFilter = {
   categoryId: ALL_CATEGORY_ID,
 };
 
-export const filterSlice = createSlice({
-  name: 'filter',
-  initialState,
-  reducers: {},
-  extraReducers: (builder) => {
-    builder
-      .addCase(setMinPrice, (state, action: PayloadAction<number>) => {
-        state.minPrice = action.payload;
-      })
-      .addCase(setMaxPrice, (state, action: PayloadAction<number>) => {
-        state.maxPrice = action.payload;
-      })
-      .addCase(setTitle, (state, action: PayloadAction<string>) => {
-        state.title = action.payload;
-      })
-      .addCase(setCategoryId, (state, action: PayloadAction<string>) => {
-        state.categoryId = action.payload;
-      })
-      .addCase(resetFilter, () => initialState);
-  },
-});
+// NOTE: type 정의해놓은 ProductFilter extends나 FilterState & ProductFilter 이렇게 써도 되나.
+const useFilterStore = create<FilterState>((set) => ({
+  ...initialState,
+  minPrice: 0,
+  maxPrice: 0,
+  title: '',
+  categoryId: ALL_CATEGORY_ID,
+  setMinPrice: (minPrice) => set({ minPrice }),
+  setMaxPrice: (maxPrice) => set({ maxPrice }),
+  setTitle: (title) => set({ title }),
+  setCategoryId: (categoryId) => set({ categoryId }),
+  resetFilter: () =>
+    set({
+      ...initialState,
+    }),
+}));
 
-export default filterSlice.reducer;
+export default useFilterStore;

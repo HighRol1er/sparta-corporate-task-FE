@@ -1,30 +1,27 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { create } from 'zustand';
 
-const initialState = {
+export interface PurchaseState {
+  isLoading: boolean;
+  error: string | null;
+
+  purchaseStart: () => void;
+  purchaseSuccess: () => void;
+  purchaseFailure: (error: string) => void;
+}
+
+const usePurchaseStore = create<PurchaseState>((set) => ({
   isLoading: false,
   error: null,
-};
 
-const purchaseSlice = createSlice({
-  name: 'purchase',
-  initialState,
-  reducers: {
-    purchaseStart: (state) => {
-      state.isLoading = true;
-      state.error = null;
-    },
-    purchaseSuccess: (state) => {
-      state.isLoading = false;
-      state.error = null;
-    },
-    purchaseFailure: (state, action) => {
-      state.isLoading = false;
-      state.error = action.payload;
-    },
+  purchaseStart: () => {
+    set({ isLoading: true, error: null });
   },
-});
+  purchaseSuccess: () => {
+    set({ isLoading: false, error: null });
+  },
+  purchaseFailure: (error: string) => {
+    set({ isLoading: false, error });
+  },
+}));
 
-export const { purchaseStart, purchaseSuccess, purchaseFailure } =
-  purchaseSlice.actions;
-
-export default purchaseSlice.reducer;
+export default usePurchaseStore;

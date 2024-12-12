@@ -5,25 +5,19 @@ import { PRODUCT_PAGE_SIZE } from '@/constants';
 import { extractIndexLink, isFirebaseIndexError } from '@/helpers/error';
 import { useModal } from '@/hooks/useModal';
 import { FirebaseIndexErrorModal } from '@/pages/error/components/FirebaseIndexErrorModal';
-import { selectIsLogin, selectUser } from '@/store/auth/authSelectors';
-import { addCartItem } from '@/store/cart/cartSlice';
-import { selectFilter } from '@/store/filter/filterSelectors';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { loadProducts } from '@/store/product/productsActions';
-import {
-  selectHasNextPage,
-  selectIsLoading,
-  selectProducts,
-  selectTotalCount,
-} from '@/store/product/productsSelectors';
 import { CartItem } from '@/types/cartType';
 import { ChevronDown, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductCardSkeleton } from '../skeletons/ProductCardSkeleton';
 import { EmptyProduct } from './EmptyProduct';
 import { ProductCard } from './ProductCard';
 import { ProductRegistrationModal } from './ProductRegistrationModal';
+
+import useAuthStore from '@/store/auth/authstore';
+import useFilterStore from '@/store/filter/filterSlice';
+import useCartStore from '@/store/cart/cartSlice';
+import useProductStore from '@/store/product/productSlice';
 
 interface ProductListProps {
   pageSize?: number;
@@ -33,32 +27,44 @@ export const ProductList: React.FC<ProductListProps> = ({
   pageSize = PRODUCT_PAGE_SIZE,
 }) => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+
+  const { isLogin, user } = useAuthStore();
+  const { addCartItem } = useCartStore();
+  const { categoryId, minPrice, maxPrice, title } = useFilterStore();
+  const {
+    items: products,
+    hasNextPage,
+    isLoading,
+    totalCount,
+    loadProducts,
+  } = useProductStore();
+
   const { isOpen, openModal, closeModal } = useModal();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isIndexErrorModalOpen, setIsIndexErrorModalOpen] =
     useState<boolean>(false);
   const [indexLink, setIndexLink] = useState<string | null>(null);
 
-  const products = useAppSelector(selectProducts);
-  const hasNextPage = useAppSelector(selectHasNextPage);
-  const isLoading = useAppSelector(selectIsLoading);
-  const filter = useAppSelector(selectFilter);
-  const user = useAppSelector(selectUser);
-  const isLogin = useAppSelector(selectIsLogin);
-  const totalCount = useAppSelector(selectTotalCount);
+  const filter = useMemo(
+    () => ({
+      categoryId,
+      minPrice,
+      maxPrice,
+      title,
+    }),
+    [categoryId, minPrice, maxPrice, title]
+  );
 
   const loadProductsData = async (isInitial = false): Promise<void> => {
     try {
       const page = isInitial ? 1 : currentPage + 1;
-      await dispatch(
-        loadProducts({
-          filter,
-          pageSize,
-          page,
-          isInitial,
-        })
-      ).unwrap();
+      await loadProducts({
+        filter,
+        pageSize,
+        page,
+        isInitial,
+      });
+
       if (!isInitial) {
         setCurrentPage(page);
       }
@@ -83,7 +89,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   const handleCartAction = (product: IProduct): void => {
     if (isLogin && user) {
       const cartItem: CartItem = { ...product, count: 1 };
-      dispatch(addCartItem({ item: cartItem, userId: user.uid, count: 1 }));
+      addCartItem({ item: cartItem, userId: user.uid, count: 1 });
       console.log(`${product.title} 상품이 \n장바구니에 담겼습니다.`);
     } else {
       navigate(pageRoutes.login);
@@ -93,7 +99,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   const handlePurchaseAction = (product: IProduct): void => {
     if (isLogin && user) {
       const cartItem: CartItem = { ...product, count: 1 };
-      dispatch(addCartItem({ item: cartItem, userId: user.uid, count: 1 }));
+      addCartItem({ item: cartItem, userId: user.uid, count: 1 });
       navigate(pageRoutes.cart);
     } else {
       navigate(pageRoutes.login);

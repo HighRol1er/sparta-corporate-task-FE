@@ -3,12 +3,11 @@ import { Input } from '@/components/ui/input';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { MAX_CART_VALUE } from '@/constants';
 import { cartValidationMessages } from '@/messages';
-import { changeCartItemCount, removeCartItem } from '@/store/cart/cartSlice';
-import { useAppDispatch } from '@/store/hooks';
 import { IUser } from '@/types/authType';
 import { CartItem } from '@/types/cartType';
 import { formatPrice } from '@/utils/formatter';
 import { Trash2 } from 'lucide-react';
+import useCartStore from '@/store/cart/cartSlice';
 
 interface ProductInfoTableRowProps {
   item: CartItem;
@@ -19,12 +18,12 @@ export const ProductInfoTableRow = ({
   item,
   user,
 }: ProductInfoTableRowProps) => {
-  const dispatch = useAppDispatch();
+  const { removeCartItem, changeCartItemCount } = useCartStore();
   const { id, title, count, image, price } = item;
 
   const handleClickDeleteItem = () => {
     if (user) {
-      dispatch(removeCartItem({ itemId: id, userId: user.uid }));
+      removeCartItem({ itemId: id, userId: user.uid });
     }
   };
 
@@ -37,9 +36,7 @@ export const ProductInfoTableRow = ({
     }
 
     if (user) {
-      dispatch(
-        changeCartItemCount({ itemId: id, userId: user.uid, count: newCount })
-      );
+      changeCartItemCount({ itemId: id, userId: user.uid, count: newCount });
     }
   };
 

@@ -6,15 +6,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ProductInfoTableRow } from '@/pages/cart/components/ProductInfoTableRow';
-import { selectUser } from '@/store/auth/authSelectors';
-import { selectCart } from '@/store/cart/cartSelectors';
-import { useAppSelector } from '@/store/hooks';
-import { IUser } from '@/types/authType';
-import { CartItem } from '@/types/cartType';
+import useAuthStore from '@/store/auth/authstore';
+import useCartStore from '@/store/cart/cartSlice';
 
 export const ProductInfoTable = () => {
-  const cart: CartItem[] = useAppSelector(selectCart);
-  const user: IUser | null = useAppSelector(selectUser);
+  const { cart } = useCartStore();
+  const { user } = useAuthStore();
 
   return (
     <Table>

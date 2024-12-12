@@ -3,9 +3,9 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { CreditCard } from 'lucide-react';
 
 import { PaymentMethodTableRow } from '@/pages/purchase/components/PaymentMethodTableRow';
-import { selectTotalPrice } from '@/store/cart/cartSelectors';
-import { useAppSelector } from '@/store/hooks';
+
 import { formatPrice } from '@/utils/formatter';
+import useCartStore from '@/store/cart/cartSlice';
 
 interface PaymentProps {
   paymentMethod: string;
@@ -16,8 +16,8 @@ export const Payment = ({
   paymentMethod,
   onPaymentMethodChange,
 }: PaymentProps) => {
-  const totalPrice = useAppSelector(selectTotalPrice);
   const shippingCost = 3000;
+  const { totalPrice } = useCartStore();
 
   const getTotalPrice = () => {
     return formatPrice(totalPrice + shippingCost);
