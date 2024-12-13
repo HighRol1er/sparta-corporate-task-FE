@@ -12,7 +12,7 @@ const useRegisterUser = () => {
       setRegisterStatus('loading');
       setRegisterError(null);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       const { setRegisterStatus } = useAuthStore.getState();
       setRegisterStatus('succeeded');
     },

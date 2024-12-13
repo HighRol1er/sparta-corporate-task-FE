@@ -6,6 +6,7 @@ import {
   PaginatedProductsDTO,
 } from '@/api/dtos/productDTO';
 import { addProductAPI, fetchProducts } from '@/api/product';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 export interface ProductState {
   items: IProduct[];
@@ -48,7 +49,6 @@ const useProductStore = create<ProductState>((set) => ({
         totalCount: result.totalCount,
       }));
     } catch (error: any) {
-      // unknown을 사용하면 안되는 이유가 있나.
       set({
         isLoading: false,
         error: error.message || 'Failed to load products',
@@ -75,3 +75,12 @@ const useProductStore = create<ProductState>((set) => ({
 }));
 
 export default useProductStore;
+
+const useAddProduct = () => {
+  return useMutation({
+    mutationFn: async (productData: NewProductDTO) => {
+      return await addProductAPI(productData);
+    },
+    onMutate: () => {},
+  });
+};
