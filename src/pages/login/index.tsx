@@ -12,6 +12,7 @@ import { EMAIL_PATTERN } from '@/constants';
 import { auth } from '@/firebase';
 import { Layout, authStatusType } from '@/pages/common/components/Layout';
 import useAuthStore from '@/store/auth/authstore';
+import { useForm } from 'react-hook-form';
 
 interface FormErrors {
   email?: string;
@@ -22,78 +23,95 @@ interface FormErrors {
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { setIsLogin, setUser } = useAuthStore();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
   const { toast } = useToast();
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [errors, setErrors] = useState<FormErrors>({});
+  // const [email, setEmail] = useState<string>('');
+  // const [password, setPassword] = useState<string>('');
+  // const [errors, setErrors] = useState<FormErrors>({});
 
   const handleClickRegister = () => {
     navigate(pageRoutes.register);
   };
 
-  const validateForm = () => {
-    let formErrors: FormErrors = {};
-    if (!email) {
-      formErrors.email = '이메일을 입력하세요';
-    } else if (!EMAIL_PATTERN.test(email)) {
-      formErrors.email = '이메일 양식이 올바르지 않습니다';
-    }
-    if (!password) {
-      formErrors.password = '비밀번호를 입력하세요';
-    }
-    setErrors(formErrors);
-    return Object.keys(formErrors).length === 0;
-  };
+  // const validateForm = () => {
+  //   let formErrors: FormErrors = {};
+  //   if (!email) {
+  //     formErrors.email = '이메일을 입력하세요';
+  //   } else if (!EMAIL_PATTERN.test(email)) {
+  //     formErrors.email = '이메일 양식이 올바르지 않습니다';
+  //   }
+  //   if (!password) {
+  //     formErrors.password = '비밀번호를 입력하세요';
+  //   }
+  //   setErrors(formErrors);
+  //   return Object.keys(formErrors).length === 0;
+  // };
 
   const handleClickLoginButton = async (
-    e: React.FormEvent<HTMLFormElement>
+    data: {
+      email: string;
+      password: string;
+    }
+    // e: React.FormEvent<HTMLFormElement>
   ) => {
-    e.preventDefault();
-    if (validateForm()) {
-      try {
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-        const user = userCredential.user;
-        const token = await user.getIdToken();
+    // e.preventDefault();
+    // if (validateForm()) {
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+      const user = userCredential.user;
+      const token = await user.getIdToken();
 
-        Cookies.set('accessToken', token, { expires: 7 });
+      Cookies.set('accessToken', token, { expires: 7 });
 
-        setIsLogin(true);
-        if (user) {
-          setUser({
-            uid: user.uid,
-            email: user.email ?? '',
-            displayName: user.displayName ?? '',
-          });
-        }
-        toast('로그인 성공!', {
-          type: 'success',
-          position: 'bottom-right',
-          showCloseButton: false,
-          autoClose: 2000,
-        });
-
-        navigate(pageRoutes.main);
-      } catch (error) {
-        console.error(
-          '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.',
-          error
-        );
-        setErrors({
-          form: '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.',
+      setIsLogin(true);
+      if (user) {
+        setUser({
+          uid: user.uid,
+          email: user.email ?? '',
+          displayName: user.displayName ?? '',
         });
       }
+      toast('로그인 성공!', {
+        type: 'success',
+        position: 'bottom-right',
+        showCloseButton: false,
+        autoClose: 2000,
+      });
+
+      navigate(pageRoutes.main);
+    } catch (error) {
+      console.error(
+        '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.',
+        error
+      );
+      // setErrors({
+      //   form: '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.',
+      // });
     }
+    // }
   };
 
   return (
     <Layout authStatus={authStatusType.NEED_NOT_LOGIN}>
       <div className="w-full h-screen max-w-md mx-auto space-y-8 flex flex-col justify-center">
-        <form onSubmit={handleClickLoginButton} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(handleClickLoginButton)}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="email">이메일</Label>
             <div className="relative">
@@ -102,12 +120,19 @@ export const LoginPage = () => {
                 id="email"
                 type="email"
                 className="pl-10"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register('email', {
+                  required: '이메일을 입력하세요',
+                  pattern: {
+                    value: EMAIL_PATTERN,
+                    message: '이메일 양식이 올바르지 않습니다.',
+                  },
+                })}
+                // value={email}
+                // onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             {errors.email && (
-              <p className="text-sm text-red-500">{errors.email}</p>
+              <p className="text-sm text-red-500">{errors.email.message}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -118,15 +143,22 @@ export const LoginPage = () => {
                 id="password"
                 type="password"
                 className="pl-10"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                {...register('password', {
+                  required: '비밀번호를 입력하세요',
+                  minLength: {
+                    value: 6,
+                    message: '비밀번호는 최소 6글자여야 합니다.',
+                  },
+                })}
+                // value={password}
+                // onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             {errors.password && (
-              <p className="text-sm text-red-500">{errors.password}</p>
+              <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
           </div>
-          {errors.form && <p className="text-sm text-red-500">{errors.form}</p>}
+          {/* {errors.form && <p className="text-sm text-red-500">{errors.form}</p>} */}
           <Button type="submit" className="w-full" aria-label="로그인">
             로그인
           </Button>
