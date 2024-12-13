@@ -30,7 +30,7 @@ export const ProductList: React.FC<ProductListProps> = ({
 
   const { isLogin, user } = useAuthStore();
   const { addCartItem } = useCartStore();
-  const { categoryId, minPrice, maxPrice, title } = useFilterStore();
+  const { categoryId, minPrice, maxPrice, title } = useFilterStore.getState();
   const {
     items: products,
     hasNextPage,
@@ -54,6 +54,7 @@ export const ProductList: React.FC<ProductListProps> = ({
     }),
     [categoryId, minPrice, maxPrice, title]
   );
+  console.log(filter);
 
   const loadProductsData = async (isInitial = false): Promise<void> => {
     try {

@@ -8,11 +8,13 @@ export interface AuthState {
   registerStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   registerError: string | null;
 
-  // Actions
   setIsLogin: (isLogin: boolean) => void;
   setUser: (user: IUser) => void;
   logout: () => void;
-  registerUser: (params: RegisterUserParams) => Promise<void>;
+  setRegisterStatus: (
+    status: 'idle' | 'loading' | 'succeeded' | 'failed'
+  ) => void;
+  setRegisterError: (error: string | null) => void;
 }
 
 export interface RegisterUserParams {
@@ -20,29 +22,30 @@ export interface RegisterUserParams {
   password: string;
   name: string;
 }
-
 const useAuthStore = create<AuthState>((set) => ({
   isLogin: false,
   user: null,
   registerStatus: 'idle',
   registerError: null,
 
-  // Actions
   setIsLogin: (isLogin) => set({ isLogin }),
   setUser: (user) => set({ user, isLogin: true }),
   logout: () => set({ isLogin: false, user: null }),
-  registerUser: async ({ email, password, name }: RegisterUserParams) => {
-    set({ registerStatus: 'loading', registerError: null });
+  setRegisterStatus: (status) => set({ registerStatus: status }),
+  setRegisterError: (error) => set({ registerError: error }),
+  // registerUser: async ({ email, password, name }: RegisterUserParams) => {
+  //   set({ registerStatus: 'loading', registerError: null });
 
-    try {
-      const user = await registerUserAPI({ email, password, name });
-      set({ registerStatus: 'succeeded', user, isLogin: true });
-    } catch (error: any) {
-      set({
-        registerStatus: 'failed',
-        registerError: error.message || 'Registration failed',
-      });
-    }
-  },
+  //   try {
+  //     const user = await registerUserAPI({ email, password, name });
+  //     set({ registerStatus: 'succeeded', user, isLogin: true });
+  //   } catch (error: any) {
+  //     set({
+  //       registerStatus: 'failed',
+  //       registerError: error.message || 'Registration failed',
+  //     });
+  //   }
+  // },
 }));
+
 export default useAuthStore;

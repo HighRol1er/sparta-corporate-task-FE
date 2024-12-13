@@ -10,7 +10,7 @@ import { EMAIL_PATTERN } from '@/constants';
 import { Layout, authStatusType } from '@/pages/common/components/Layout';
 import useAuthStore from '@/store/auth/authstore';
 import { useToast } from '@/hooks/useToast';
-import { useForm } from 'react-hook-form';
+import useRegisterUser from '@/store/auth/useAuthApi';
 
 interface FormErrors {
   name?: string;
@@ -20,30 +20,14 @@ interface FormErrors {
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { registerStatus, registerError, registerUser } = useAuthStore();
+  const { registerStatus, registerError } = useAuthStore();
   const { toast } = useToast();
+  const { mutate } = useRegisterUser();
 
-  // const [name, setName] = useState<string>('');
-  // const [email, setEmail] = useState<string>('');
-  // const [password, setPassword] = useState<string>('');
-  // const [errors, setErrors] = useState<FormErrors>({});
-
-  //NOTE: React-Hook-Form
-  /**
-   * register : allowed us to actually register individual inputs into the hook
-   *
-   */
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-    },
-  });
+  const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [errors, setErrors] = useState<FormErrors>({});
 
   useEffect(() => {
     if (registerStatus === 'succeeded') {
@@ -51,49 +35,68 @@ export const RegisterPage: React.FC = () => {
     }
   }, [registerStatus, navigate]);
 
-  // const validateForm = (): boolean => {
-  //   let formErrors: FormErrors = {};
-  //   if (!name) formErrors.name = '이름을 입력하세요';
-  //   if (!email) {
-  //     formErrors.email = '이메일을 입력하세요';
-  //   } else if (!EMAIL_PATTERN.test(email)) {
-  //     formErrors.email = '이메일 양식이 올바르지 않습니다';
-  //   }
-  //   if (!password) formErrors.password = '비밀번호를 입력하세요';
-  //   // setErrors(formErrors);
-  //   return Object.keys(formErrors).length === 0;
-  // };
+  const validateForm = (): boolean => {
+    let formErrors: FormErrors = {};
+    if (!name) formErrors.name = '이름을 입력하세요';
+    if (!email) {
+      formErrors.email = '이메일을 입력하세요';
+    } else if (!EMAIL_PATTERN.test(email)) {
+      formErrors.email = '이메일 양식이 올바르지 않습니다';
+    }
+    if (!password) formErrors.password = '비밀번호를 입력하세요';
+    setErrors(formErrors);
+    return Object.keys(formErrors).length === 0;
+  };
 
-  const handleRegister = async (data: {
-    name: string;
-    email: string;
-    password: string;
-  }) => {
-    // e.preventDefault();
-    // if (validateForm()) {
-    try {
-      await registerUser(data);
-      toast('회원가입 성공!', {
-        type: 'success',
-        position: 'bottom-right',
-        showCloseButton: false,
-        autoClose: 2000,
-      });
-      console.log('가입 성공!');
-      navigate(pageRoutes.login);
-    } catch (error) {
-      console.error(
-        '회원가입 중 오류가 발생했습니다. 다시 시도해 주세요.',
-        error
-      );
-      // }
+  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (validateForm()) {
+      try {
+        mutate(
+          { email, password, name },
+          {
+            onSuccess: () => {
+              console.log('가입 성공!');
+              navigate(pageRoutes.login);
+            },
+            onError: (error) => {
+              console.error('회원가입 중 오류가 발생했습니다.', error);
+            },
+          }
+        );
+        toast('회원가입 성공!', {
+          type: 'success',
+          position: 'bottom-right',
+          showCloseButton: false,
+          autoClose: 2000,
+        });
+      } catch (error) {
+        console.error(
+          '회원가입 중 오류가 발생했습니다. 다시 시도해 주세요.',
+          error
+        );
+      }
+    }
+  };
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    switch (id) {
+      case 'name':
+        setName(value);
+        break;
+      case 'email':
+        setEmail(value);
+        break;
+      case 'password':
+        setPassword(value);
+        break;
     }
   };
   console.log(errors);
   return (
     <Layout authStatus={authStatusType.NEED_NOT_LOGIN}>
       <div className="w-full h-screen max-w-md mx-auto space-y-8 flex flex-col justify-center">
-        <form onSubmit={handleSubmit(handleRegister)} className="space-y-4">
+        <form onSubmit={handleRegister} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">이름</Label>
             <div className="relative">
@@ -102,13 +105,12 @@ export const RegisterPage: React.FC = () => {
                 id="name"
                 type="text"
                 className="pl-10"
-                // value={name}
-                // onChange={handleInputChange}
-                {...register('name', { required: '이름을 입력하세요' })}
+                value={name}
+                onChange={handleInputChange}
               />
             </div>
             {errors.name && (
-              <p className="text-sm text-red-500">{errors.name.message}</p>
+              <p className="text-sm text-red-500">{errors.name}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -119,19 +121,12 @@ export const RegisterPage: React.FC = () => {
                 id="email"
                 type="email"
                 className="pl-10"
-                // value={email}
-                // onChange={handleInputChange}
-                {...register('email', {
-                  required: '이메일을 입력하세요',
-                  pattern: {
-                    value: EMAIL_PATTERN,
-                    message: '이메일 양식이 올바르지 않습니다',
-                  },
-                })}
+                value={email}
+                onChange={handleInputChange}
               />
             </div>
             {errors.email && (
-              <p className="text-sm text-red-500">{errors.email.message}</p>
+              <p className="text-sm text-red-500">{errors.email}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -142,19 +137,12 @@ export const RegisterPage: React.FC = () => {
                 id="password"
                 type="password"
                 className="pl-10"
-                // value={password}
-                // onChange={handleInputChange}
-                {...register('password', {
-                  required: true,
-                  minLength: {
-                    value: 6,
-                    message: '비밀번호는 최소 6글자여야 합니다.',
-                  },
-                })}
+                value={password}
+                onChange={handleInputChange}
               />
             </div>
             {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
+              <p className="text-sm text-red-500">{errors.password}</p>
             )}
           </div>
           <Button
